@@ -1,17 +1,19 @@
 # Informer 213 Keyboard Firmware
 
+![Изображение](https://github.com/user-attachments/assets/af887412-c078-4108-a875-0ca18df30807)
+![B975B99A-3C3A-40FC-80E9-567C41E198F9_1_105_c](https://github.com/user-attachments/assets/3fdb0fbd-2968-49c6-be26-6a5a0b1fcfaa)
+![F42247DC-CE73-49D2-A771-158E9641E0AA_1_105_c](https://github.com/user-attachments/assets/ad6d0564-1af9-44da-b2ef-8b6e35693b25)
+<img width="1141" alt="Снимок экрана 2024-08-25 в 14 38 59" src="https://github.com/user-attachments/assets/dd727615-5b1f-4d9e-a92d-a8897e97037f">
+<img width="935" alt="Снимок экрана 2024-08-25 в 04 04 10" src="https://github.com/user-attachments/assets/e95b6fd4-dd0b-48b5-a117-4ec0692f6539">
+<img width="1052" alt="Снимок экрана 2024-08-25 в 04 04 14" src="https://github.com/user-attachments/assets/8a3abfda-1943-4e7a-ac1a-2fa57cbf5253">
+<img width="1021" alt="Снимок экрана 2024-08-25 в 04 03 39" src="https://github.com/user-attachments/assets/44dd2be7-6e8a-4aba-bd80-f0eeb2391b68">
+
 Прошивка для клавиатуры терминала **Informer 213** (США, 1989–1992) на базе **Teensy 4.1**.
 Внутри корпуса установлен Mac Mini 2014. Прошивка оптимизирована под macOS.
 
 ---
 
-## Как перепрошить (без разборки корпуса)
-
-### Быстрый способ — через клавиатуру
-
-1. Зажми **Fn** (2-й ряд, 2-я клавиша слева) и нажми **ESC**
-2. Teensy автоматически войдёт в режим загрузчика (HalfKay)
-3. Сразу запусти команду прошивки (см. ниже)
+## Как перепрошить
 
 ### Команда прошивки
 
@@ -27,13 +29,59 @@ arduino-cli upload -p /dev/cu.usbmodem* --fqbn "teensy:avr:teensy41:usb=serialhi
 sudo teensy_loader_cli --mcu=TEENSY41 -w -v \
   "/Users/exrector/Documents/ПРОЕКТЫ/informer213-arduino/build/informer213-arduino.ino.hex"
 ```
-*(нажми Fn+ESC на клавиатуре после запуска команды)*
 
-### Резервный способ — физическая кнопка Reset
+### Кнопка Reset
 
-Если Fn+ESC не работает (например, после сбоя прошивки):
-- Кнопка Reset находится на плате Teensy 4.1 внутри корпуса
-- Требует частичной разборки
+**Teensy 4.x не поддерживает программный вход в загрузчик** — это аппаратная защита PJRC.
+Для перепрошивки всегда нужно нажать физическую кнопку Reset на плате Teensy внутри корпуса.
+
+> Fn+ESC перезапускает прошивку (мягкий reboot), но не входит в загрузчик.
+
+---
+
+## Физическая раскладка клавиатуры
+
+```
+РЯД 1:  [ESC ] [F1 ▼] [F2 ▲] [F3 ] [F4 ] [F5 ] [F6 ] [F7 ⏮] [F8 ⏯] [F9 ⏭] [F10 🔇] [F11 🔉] [F12 🔊]
+
+РЯД 2:  [CAPS] [FN ] [PgUp] [PgDn] [Home] [End] [----] [  }] [  \] [←] [↑] [↓] [→]
+
+РЯД 3:  [ 1 ] [ 2 ] [ 3 ] [ 4 ] [ 5 ] [ 6 ] [ 7 ] [ 8 ] [ 9 ] [ 0 ] [ - ] [ = ] [ `~ ]
+
+РЯД 4:  [ Q ] [ W ] [ E ] [ R ] [ T ] [ Y ] [ U ] [ I ] [ O ] [ P ] [ [ ] [BSPC]
+
+РЯД 5:  [TAB] [ A ] [ S ] [ D ] [ F ] [ G ] [ H ] [ J ] [ K ] [ L ] [ ; ] [ ' ] [ENTER]
+
+РЯД 6:  [LSHFT] [ Z ] [ X ] [ C ] [ V ] [ B ] [ N ] [ M ] [ , ] [ . ] [ / ] [RSHFT]
+
+РЯД 7:  [CTRL] [CMD] [         SPACE         ] [OPT] [ENTER]
+```
+
+---
+
+## Fn-комбинации
+
+| Комбинация | Действие |
+|---|---|
+| Fn + Backspace | Forward Delete (удалить символ справа) |
+| Fn + ESC | Мягкий перезапуск прошивки |
+
+---
+
+## F1–F12 (MacBook-стиль)
+
+| Клавиша | Действие |
+|---|---|
+| F1 | Яркость ↓ |
+| F2 | Яркость ↑ |
+| F3 | Mission Control (назначить в System Preferences) |
+| F4 | Launchpad (назначить в System Preferences) |
+| F7 | Предыдущий трек |
+| F8 | Play/Pause |
+| F9 | Следующий трек |
+| F10 | Mute |
+| F11 | Громкость ↓ |
+| F12 | Громкость ↑ |
 
 ---
 
@@ -74,57 +122,6 @@ sudo teensy_loader_cli --mcu=TEENSY41 -w -v \
 | col 12 (row1[11]) | ↓ |
 | col 13 (row1[12]) | → |
 
-## Fn-комбинации
-
-| Комбинация | Действие |
-|---|---|
-| Fn + Backspace | Forward Delete (удалить символ справа) |
-| **Fn + ESC** | **Войти в режим загрузчика (для перепрошивки)** |
-
-## F1–F12 (MacBook-стиль)
-
-| Клавиша | Действие |
-|---|---|
-| F1 | Яркость ↓ |
-| F2 | Яркость ↑ |
-| F3 | Mission Control (назначить в System Preferences) |
-| F4 | Launchpad (назначить в System Preferences) |
-| F7 | Предыдущий трек |
-| F8 | Play/Pause |
-| F9 | Следующий трек |
-| F10 | Mute |
-| F11 | Громкость ↓ |
-| F12 | Громкость ↑ |
-
----
-
-## Физическая раскладка клавиатуры
-
-```
-РЯД 1:  [ESC ] [F1 ▼] [F2 ▲] [F3 ] [F4 ] [F5 ] [F6 ] [F7 ⏮] [F8 ⏯] [F9 ⏭] [F10 🔇] [F11 🔉] [F12 🔊]
-
-РЯД 2:  [CAPS] [FN ] [PgUp] [PgDn] [Home] [End] [----] [ } ] [ \] [←] [↑] [↓] [→]
-
-РЯД 3:  [ 1 ] [ 2 ] [ 3 ] [ 4 ] [ 5 ] [ 6 ] [ 7 ] [ 8 ] [ 9 ] [ 0 ] [ - ] [ = ] [ `~ ]
-
-РЯД 4:  [ Q ] [ W ] [ E ] [ R ] [ T ] [ Y ] [ U ] [ I ] [ O ] [ P ] [ [ ] [BSPC]
-
-РЯД 5:  [TAB] [ A ] [ S ] [ D ] [ F ] [ G ] [ H ] [ J ] [ K ] [ L ] [ ; ] [ ' ] [ENTER]
-
-РЯД 6:  [LSHFT] [ Z ] [ X ] [ C ] [ V ] [ B ] [ N ] [ M ] [ , ] [ . ] [ / ] [RSHFT]
-
-РЯД 7:  [CTRL] [CMD] [         SPACE         ] [OPT] [ENTER]
-```
-
-### Специальные комбинации с Fn (ряд 2, кнопка 2)
-
-| Комбинация | Действие |
-|---|---|
-| Fn + Backspace | Forward Delete (удалить символ справа) |
-| Fn + ESC | Перезапуск прошивки (НЕ загрузчик — Teensy 4.x защищён) |
-
-> **Для перепрошивки нужна физическая кнопка Reset на плате Teensy внутри корпуса.**
-
 ---
 
 ## Версии прошивки
@@ -134,4 +131,4 @@ sudo teensy_loader_cli --mcu=TEENSY41 -w -v \
 | v1.0 | Первая рабочая версия, базовые клавиши |
 | v2.0 | Все стандартные Mac-клавиши + F1-F12 как медиа |
 | v2.1 | Fn-модификатор, Fn+Backspace=Delete, тёмный ряд |
-| v2.2 | Fn+ESC = вход в загрузчик (перепрошивка без разборки) |
+| v2.2 | Fn+ESC = мягкий reboot |
