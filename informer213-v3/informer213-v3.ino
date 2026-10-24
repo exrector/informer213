@@ -1,5 +1,5 @@
 /*
- * Informer 213 Keyboard Firmware for Teensy 4.1 — v3.0 (новая распайка 2026-10-14)
+ * Informer 213 Keyboard Firmware for Teensy 4.1 — v3.1 (новая распайка 2026-10-14)
  * macOS. Матрица 7 строк × 13 столбцов, диоды 1N4148 (ток из столбца в строку).
  * Строки: пины 33..39 (физ. ряды сверху вниз). Столбцы: пины 0..12 (12 = левый край).
  * Строку тянем в LOW, столбцы читаем с подтяжкой. Карта: ../MATRIX-MAP.md
@@ -13,6 +13,7 @@
 #define KEY_BRIGHTNESS_DOWN  (0x70 | 0xE400)
 #define KEY_BRIGHTNESS_UP    (0x6F | 0xE400)
 #define KEY_FN  0xFFFE
+#define KEY_LOCK 0xFFFD
 
 #define ROWS 7
 #define COLS 13
@@ -24,6 +25,12 @@ bool     key_state[ROWS][COLS]  = {};
 bool     raw_state[ROWS][COLS]  = {};
 uint32_t debounce_t[ROWS][COLS] = {};
 bool     fn_held = false;
+bool     keyboard_locked = false;
+
+void reportLockState() {
+  Serial.print("INFORMER213 v3.1 LOCK=");
+  Serial.println(keyboard_locked ? "ON" : "OFF");
+}
 
 // KEYMAP[строка][пин столбца]; физически слева направо = столбец 12 → 0
 const uint16_t KEYMAP[ROWS][COLS] = {
@@ -73,13 +80,13 @@ const uint16_t KEYMAP[ROWS][COLS] = {
   { MODIFIERKEY_RIGHT_SHIFT, KEY_SLASH, KEY_PERIOD, KEY_COMMA, KEY_M, KEY_N,
     KEY_B, KEY_V, KEY_C, KEY_X, KEY_Z, MODIFIERKEY_LEFT_SHIFT, 0 },
 
-  // пин 39 — RESET(Ctrl) замок(Cmd) Space ALT(Opt) ENTER
+  // пин 39 — RESET(Ctrl) замок(блокировка) Space ALT(Opt) ENTER
   { KEY_ENTER,                            // 0  ENTER
     MODIFIERKEY_LEFT_ALT,                 // 1  ALT
     0, 0, 0,
     KEY_SPACE,                            // 5  пробел
     0, 0, 0, 0,
-    MODIFIERKEY_LEFT_GUI,                 // 10 замок → Cmd
+    KEY_LOCK,                             // 10 замок → блокировка клавиатуры
     MODIFIERKEY_LEFT_CTRL,                // 11 RESET → Ctrl
     0 },
 };
@@ -90,9 +97,12 @@ void setup() {
   Serial.begin(115200);
   Keyboard.begin();
   delay(300);
+  reportLockState();
 }
 
 void loop() {
+  // Read-only USB diagnostic: '?' reports firmware version and current lock.
+  while (Serial.available()) { if (Serial.read() == '?') reportLockState(); }
   uint32_t now = millis();
   for (int r = 0; r < ROWS; r++) {
     pinMode(ROW_PINS[r], OUTPUT);
@@ -109,6 +119,17 @@ void loop() {
         key_state[r][c] = pressed;
         Serial.print(pressed ? "PRESS row=" : "REL   row="); Serial.print(ROW_PINS[r]);
         Serial.print(" col="); Serial.println(c);
+        if (key == KEY_LOCK) {
+          if (pressed) {
+            keyboard_locked = !keyboard_locked;
+            fn_held = false;
+            Keyboard.releaseAll();
+            usb_keymedia_release_all();
+            reportLockState();
+          }
+          continue;
+        }
+        if (keyboard_locked) continue;
         if (key == KEY_FN) { fn_held = pressed; continue; }
         if (key == KEY_ESC && fn_held && pressed) _reboot_Teensyduino_();
         if (key == KEY_BACKSPACE) {

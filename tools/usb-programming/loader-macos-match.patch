@@ -1,0 +1,18 @@
+--- a/teensy_loader_cli.c
++++ b/teensy_loader_cli.c
+@@ -613,7 +613,14 @@
+ 	dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
+ 		&kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+ 	if (!dict) return;
+-	IOHIDManagerSetDeviceMatching(hid_manager, dict);
++	/* Match only PJRC's programming interface; never open the user's keyboard. */
++        int vendor = 0x16C0, product = 0x0478;
++        CFNumberRef v = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &vendor);
++        CFNumberRef p = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &product);
++        CFDictionarySetValue(dict, CFSTR(kIOHIDVendorIDKey), v);
++        CFDictionarySetValue(dict, CFSTR(kIOHIDProductIDKey), p);
++        CFRelease(v); CFRelease(p);
++        IOHIDManagerSetDeviceMatching(hid_manager, dict);
+ 	CFRelease(dict);
+ 	IOHIDManagerScheduleWithRunLoop(hid_manager, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+ 	IOHIDManagerRegisterDeviceMatchingCallback(hid_manager, attach_callback, NULL);
