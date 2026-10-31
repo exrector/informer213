@@ -90,12 +90,12 @@ const uint16_t KEYMAP[ROWS][COLS] = {
 
 void setup() {
   for (int c = 0; c < COLS; c++) {
-    pinMode(COL_PINS[c], OUTPUT);
-    digitalWrite(COL_PINS[c], HIGH);
+    pinMode(COL_PINS[c], INPUT);  // высокий импеданс — не мешают строкам
   }
   for (int r = 0; r < ROWS; r++) {
     pinMode(ROW_PINS[r], INPUT_PULLUP);
   }
+  Serial.begin(115200);
   Keyboard.begin();
   delay(500);
 }
@@ -104,6 +104,7 @@ void loop() {
   uint32_t now = millis();
 
   for (int c = 0; c < COLS; c++) {
+    pinMode(COL_PINS[c], OUTPUT);
     digitalWrite(COL_PINS[c], LOW);
     delayMicroseconds(10);
 
@@ -142,12 +143,17 @@ void loop() {
             continue;
           }
 
-          if (pressed) Keyboard.press(key);
-          else         Keyboard.release(key);
+          if (pressed) {
+            Serial.print("PRESS r="); Serial.print(r); Serial.print(" c="); Serial.println(c);
+            Keyboard.press(key);
+          } else {
+            Serial.print("REL   r="); Serial.print(r); Serial.print(" c="); Serial.println(c);
+            Keyboard.release(key);
+          }
         }
       }
     }
 
-    digitalWrite(COL_PINS[c], HIGH);
+    pinMode(COL_PINS[c], INPUT);  // отпускаем колонку — не мешает другим строкам
   }
 }
